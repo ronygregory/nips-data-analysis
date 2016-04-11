@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 18 10:40:04 2016
+Created on Thu Apr 07 16:01:12 2016
 
 @author: Murali
 """
@@ -23,15 +23,7 @@ from plotly.graph_objs import Scatter
 from plotly.offline import download_plotlyjs, init_notebook_mode, iplot
 from plotly.graph_objs import *
 eng_stopwords=stopwords.words("english")
-papers=pd.read_csv(r"E:\Data mining project\output\papers.csv",delimiter=",")
-abstract_data=list(papers["Abstract"])
-#paper_text=list(papers["PaperText"])
-#abstract_data=paper_text
-
-domain_spec_stopwords=["press","foundations","trends","vol","editor","workshop","international","journal","research","paper","proceedings","conference","wokshop","acm","icml","sigkdd","ieee","pages","springer"]
-eng_stopwords=eng_stopwords+domain_spec_stopwords
-
-#normal_stopwords=[a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your]
+from sklearn.metrics.pairwise import euclidean_distances
 
 def data_cleaning(datafile):
     regex = re.compile('[^a-zA-Z]')
@@ -50,7 +42,7 @@ def data_cleaning(datafile):
 #model=gs.models.Word2Vec(cleaned_abstract,min_count=1)
 
 def word2vec_model_creation(data_file,kgrams_or_phrases,length_of_kgrams_or_phrases,type_of_data):
-    cleaned_abstract=data_cleaning(data_file)
+    cleaned_abstract=data_file
     #print len(cleaned_abstract_data)
     if kgrams_or_phrases=="kgrams":
         n_grams=lambda datalist,n: zip(*[datalist[i:] for i in range(n)])
@@ -92,23 +84,6 @@ def word2vec_model_creation(data_file,kgrams_or_phrases,length_of_kgrams_or_phra
     else:
          final_model.save(kgrams_or_phrases+"_"+str(length_of_kgrams_or_phrases)+"_"+"paper word2vec model.txt") 
     return final_model,final_data         
-"""           
-bi_grams=[combining_bigrams(n_grams(i,2),2) for i in cleaned_abstract] 
-tri_grams=[combining_trigrams(n_grams(i,3),3) for i in cleaned_abstract]
-model_unigrams=gs.models.Word2Vec(cleaned_abstract,min_count=5,size=100)
-model_bigrams=gs.models.Word2Vec(bi_grams,min_count=5)
-model_trigrams=gs.models.Word2Vec(tri_grams,min_count=2)
-
-bigram_phrases=gs.models.Phrases(cleaned_abstract)
-res_bi_phrases=bigram_phrases[cleaned_abstract]
-res_bi_phrases_ls=list(res_bi_phrases)
-
-trigram_phrases=gs.models.Phrases(res_bi_phrases)
-res_tri_phrases=list(trigram_phrases[res_bi_phrases])
-
-model_biphrases=gs.models.Word2Vec(res_bi_phrases_ls,min_count=3)
-model_triphrases=gs.models.Word2Vec(res_tri_phrases,min_count=2)
-"""
 
 
 
@@ -178,42 +153,7 @@ def vis_word_vector(word_2_vec_model):
     data=tsne_model.fit_transform(word_2_vec_model.syn0)
    # names=word_2_vec_model.index2word
     plt.scatter(x=data[:,0],y=data[:,1])
-"""
-def plotly_js_viz(word_2_vec_model):
-    tsne_model=TSNE(n_components=2,random_state=5)
-    data=tsne_model.fit_transform(word_2_vec_model.syn0)
-    xd=list(data[:,0])
-    yd=list(data[:,1])
-    names=word_2_vec_model.index2word
-    trace0 = go.Scatter(
-    x=xd,
-    y=yd,
-    mode='markers',
-    marker=dict(size=12,
-                line=dict(width=1)
-               ),
-    name='Word vectors',
-    text=names,
-    )
-    data = [trace0]
-    layout = go.Layout(
-       title='Visualizing W2V',
-       hovermode='closest',
-       xaxis=dict(
-          title='x',
-          ticklen=5,
-          zeroline=False,
-          gridwidth=2,
-       ),
-       yaxis=dict(
-           title='y',
-           ticklen=5,
-          gridwidth=2,
-     ),
-   )
-    fig = go.Figure(data=data, layout=layout)
-    py.iplot(fig, filename='word vectors')
-"""
+
 def plotly_js_viz(word_2_vec_model):
     tsne_model=TSNE(n_components=2,random_state=5)
     data=tsne_model.fit_transform(word_2_vec_model.syn0)
@@ -221,40 +161,55 @@ def plotly_js_viz(word_2_vec_model):
     yd=list(data[:,1])
     names_our=word_2_vec_model.index2word
     plot([Scatter(x=xd,y=yd,mode="markers",text=names_our)])
-    """
-    iplot(
-    {"data":
-        [Scatter(x=xd[i], y=yd[i],mode="markers",name=names_our[i]) for i in range(len(xd))],
-        'layout': Layout(xaxis=XAxis(title='Life Expectancy'), yaxis=YAxis(title='GDP per Capita', type='log'))
-   }, show_link=False)
-   """    
+
     
-#sim_indices=sim_comp(model_biphrases,[i for i in res_bi_phrases_ls if len(i)!=0],"average")
 if __name__=="__main__":
-    #init_notebook_mode()
-    eng_stopwords=stopwords.words("english")
-    papers=pd.read_csv(r"E:\Data mining project\output\papers.csv",delimiter=",")
-    inp_column=raw_input("Do you want to compare similarity using the abstract or the full paper text, type a for abstract and anything else for full text")
-    if inp_column=="a":
-       abstract_data=list(papers["Abstract"])
-    else:
-        abstract_data=list(papers["PaperText"])
-    for i in range(len(abstract_data)):
-        empty_data=[]
-        if len(abstract_data[i])==0:
-           empty_data.append(i)
-    for i in empty_data:
-        print "Deleting row "+ str(i) +" from our dataset because it's empty"
-        del abstract_data[i]
-        
-    inp_kgrams_phrases=raw_input("Type kgrams for k-grams and phrases to create phrases from your data to load the word2vec model with: ") 
-    inp_len=raw_input("Length of kgrams or phrases and make sure it's either 2 or 3: ")
-    w2v_model,data_used=word2vec_model_creation(abstract_data,inp_kgrams_phrases,int(inp_len),inp_column)
-    #init_notebook_mode()
-    #vis_word_vector(w2v_model)
-    #plotly_js_viz(w2v_model)
-    inp_avg_or_clustering=raw_input("Type average for averaging the word vectors for each sentence or clustering inorder to create a bag of centroids model: ")    
-    sim_indices=sim_comp(w2v_model,data_used,inp_avg_or_clustering)   
+   papers=pd.read_csv("D:/dm project/output/Papers.csv",delimiter=",")
+   authors=pd.read_csv("D:/dm project/output/Paperauthors.csv",delimiter=",")
+   del authors["Id"]
+   authors.columns=["Id","AuthorId"]
+   joined_df=pd.merge(papers,authors,on="Id")
+   authors_id_to_names=pd.read_csv("D:/dm project/output/Authors.csv",delimiter=",")
+   #del authors_id_to_names["Id"]
+   authors_id_to_names.columns=["AuthorId","AuthorName"]
+   joined_df=pd.merge(joined_df,authors_id_to_names,on="AuthorId")
+   #def similarity_simple(vectors):
+   grped=joined_df.groupby(["AuthorName"])
+   #grped_df=pd.DataFrame(grped)
+   list_of_authors=grped.groups.keys()
+   authors_to_papers=[]
+   for i in list_of_authors:
+      place_holder=[]
+      for j in grped.groups[i]:
+          #print int(j)
+          place_holder.append(j)
+      authors_to_papers.append(place_holder)
+   choice=str(raw_input("What do you want to train the word2vec model on based on the papertext of all papers of the authors or the abstract or the title,input Abstract for abstract, PaperText for full paper text and Title for title"))
+   final_data=[]
+   for i in authors_to_papers:
+       temp_str=" "
+       for j in i:
+           temp_str=temp_str+ joined_df.iloc[j][choice]+" "
+       final_data.append(temp_str)
+   final_data=[i.split() for i in final_data]
+   abstract_data=final_data
+   inp_kgrams_phrases=raw_input("Type kgrams for k-grams and phrases to create phrases from your data to load the word2vec model with: ") 
+   inp_len=raw_input("Length of kgrams or phrases and make sure it's either 2 or 3: ")
+   print inp_len
+   print inp_kgrams_phrases
+   print choice
+   w2v_model,data_used=word2vec_model_creation(abstract_data,inp_kgrams_phrases,int(inp_len),choice)
+   #init_notebook_mode()
+   #vis_word_vector(w2v_model)
+   #plotly_js_viz(w2v_model)
+   inp_avg_or_clustering=raw_input("Type average for averaging the word vectors for each sentence or clustering inorder to create a bag of centroids model: ")    
+   sim_indices=sim_comp(w2v_model,data_used,inp_avg_or_clustering) 
+   
+"""        
+df=pd.DataFrame(authors_to_papers)
+df=df.fillna(0)
+dis_matrix=euclidean_distances(df,df)  
+#for i in dis_matrix.shape[0]:
     
-                
-        
+index_matrix=[np.argpartition(dis_matrix[i,:],-6)[-6:] for i in range(dis_matrix.shape[0])]
+"""
