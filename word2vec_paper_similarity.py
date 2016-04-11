@@ -22,16 +22,13 @@ from plotly.offline import plot
 from plotly.graph_objs import Scatter
 from plotly.offline import download_plotlyjs, init_notebook_mode, iplot
 from plotly.graph_objs import *
-eng_stopwords=stopwords.words("english")
-papers=pd.read_csv(r"E:\Data mining project\output\papers.csv",delimiter=",")
-abstract_data=list(papers["Abstract"])
+#eng_stopwords=stopwords.words("english")
+#papers=pd.read_csv(r"E:\Data mining project\output\papers.csv",delimiter=",")
+#abstract_data=list(papers["Abstract"])
 #paper_text=list(papers["PaperText"])
 #abstract_data=paper_text
 
-domain_spec_stopwords=["press","foundations","trends","vol","editor","workshop","international","journal","research","paper","proceedings","conference","wokshop","acm","icml","sigkdd","ieee","pages","springer"]
-eng_stopwords=eng_stopwords+domain_spec_stopwords
-
-#normal_stopwords=[a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your]
+      
 
 def data_cleaning(datafile):
     regex = re.compile('[^a-zA-Z]')
@@ -40,7 +37,8 @@ def data_cleaning(datafile):
         assert len(i.split())>0,"Make sure that the abstract is not empty"
         temp_ls=[]
         for j in regex.sub(" ",i).lower().split():
-            temp_ls.append(j)
+            if j not in eng_stopwords:
+              temp_ls.append(j)
         ls.append(temp_ls)
     return ls
         
@@ -233,6 +231,16 @@ def plotly_js_viz(word_2_vec_model):
 if __name__=="__main__":
     #init_notebook_mode()
     eng_stopwords=stopwords.words("english")
+    domain_spec_stopwords=["press","foundations","trends","vol","editor","workshop","international","journal","research","paper","proceedings","conference","wokshop","acm","icml","sigkdd","ieee","pages","springer"]
+    eng_stopwords=eng_stopwords+domain_spec_stopwords
+    #normal_stopwords=[a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your]
+    with open(r"C:\Users\Murali\Desktop\full_stopwords.txt","r") as f:
+        comp_st=[]
+        for i in f.readlines():
+           comp_st.append(i[:-1])
+        
+    compt_st=[i for i in comp_st if i!='']
+    eng_stopwords=eng_stopwords+comp_st  
     papers=pd.read_csv(r"E:\Data mining project\output\papers.csv",delimiter=",")
     inp_column=raw_input("Do you want to compare similarity using the abstract or the full paper text, type a for abstract and anything else for full text")
     if inp_column=="a":
