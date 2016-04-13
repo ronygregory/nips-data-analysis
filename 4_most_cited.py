@@ -54,6 +54,13 @@ count = 0
 ref_count_map = {}
 
 print len(reference_list)
+
+with open("references.txt",'w') as f:
+    for item in reference_list:
+        f.write("%s\n" % item)
+    
+print "done"
+
 done_list = []
 kgram_map = {}
 for i, reference in enumerate(reference_list):
