@@ -17,6 +17,8 @@ from nltk.corpus import stopwords
 import re
 from gensim import corpora, models, similarities
 import nltk
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 def topics_creation(text_data_loc,num_of_topics,stp):
     
@@ -69,5 +71,23 @@ if __name__=="__main__":
     rexp=re.compile('[^a-zA-Z]')
     abstract_data_ls_of_ls=[[j.lower() for j in i if j.lower() not in eng_stopwords and rexp.sub("",j.lower())!=''] for i in abstract_data_ls_of_ls]  
     phrases_model=gs.models.Phrases(abstract_data_ls_of_ls)    
-    bip_data=phrases_model[abstract_data_ls_of_ls]    
-    lda_model,topics_returned=topics_creation(bip_data,200,eng_stopwords)        
+    bip_data=phrases_model[abstract_data_ls_of_ls]
+    num_topics=200    
+    lda_model,topics_returned=topics_creation(bip_data,num_topics,eng_stopwords)
+    num_top_words=int(raw_input("how many top words from  each topic do you want to create word colud"))
+    inp_for_wc=[]
+    for i in range(num_topics):
+        inp_for_wc.append(" ".join([j[j.find("*")+1:] for j in lda_model.print_topic(i,topn=num_top_words).split("+") if j[j.find("*")+1:].find("_")!=-1]))
+    total_str=" "
+    for i in inp_for_wc:
+        total_str=total_str+i+" "
+    #wordcloud = WordCloud().generate(total_str)    
+    #plt.imshow(wordcloud)
+    #plt.axis("off")
+    # take relative word frequencies into account, lower max_font_size
+    wordcloud = WordCloud(max_font_size=50, relative_scaling=.75).generate(total_str)
+    plt.figure()
+    plt.imshow(wordcloud)
+    plt.axis("off")
+    plt.show()
+        
